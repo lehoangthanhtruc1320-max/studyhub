@@ -13,7 +13,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Cấu hình Firebase chính xác của bạn
         const firebaseConfig = {
             apiKey: "AIzaSyDJxbgxBOdiVDXk07XU4KhHe2HM-BZf3Gs",
             authDomain: "studyhub-ac686.firebaseapp.com",
@@ -24,7 +23,6 @@
             measurementId: "G-LZC96XFTCD"
         };
 
-        // Khởi tạo Firebase Compat
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
@@ -32,7 +30,6 @@
 
         window.currentUser = null;
 
-        // Xử lý đăng nhập Google
         window.loginWithGoogle = async function() {
             try {
                 await auth.signInWithPopup(provider);
@@ -42,7 +39,6 @@
             }
         };
 
-        // Xử lý đăng xuất
         window.logout = async function() {
             try {
                 await auth.signOut();
@@ -51,7 +47,6 @@
             }
         };
 
-        // Lắng nghe trạng thái đăng nhập
         auth.onAuthStateChanged((user) => {
             window.currentUser = user;
             const loginSection = document.getElementById("login-section");
@@ -84,7 +79,6 @@
             loadLessons();
         });
 
-        // Hàm Đóng góp chuyên đề
         window.handleContribute = async function(e) {
             e.preventDefault();
             if (!window.currentUser) {
@@ -92,16 +86,16 @@
                 return;
             }
 
-            const title = document.getElementById("lesson-title").value;
-            const subject = document.getElementById("lesson-subject").value;
+            const title = document.getElementById("lesson-title").value.trim();
+            const subject = document.getElementById("lesson-subject").value.trim();
             const time = document.getElementById("lesson-time").value;
-            const fileUrl = document.getElementById("lesson-file").value;
+            const fileUrl = document.getElementById("lesson-file").value.trim();
 
             try {
                 await db.collection("lessons").add({
                     title: title,
-                    subject: subject,
-                    time: time ? time + "p" : "15p",
+                    subject: subject || "Chung",
+                    time: time ? time + " phút" : "15 phút",
                     fileUrl: fileUrl,
                     authorName: window.currentUser.displayName || "Thành viên",
                     authorEmail: window.currentUser.email,
@@ -117,7 +111,6 @@
             }
         };
 
-        // Hàm Xóa bài học
         window.deleteLesson = async function(id) {
             if (!window.currentUser) {
                 alert("Bạn cần đăng nhập để thực hiện hành động này!");
@@ -135,7 +128,7 @@
             }
         };
 
-        // Hàm Tải danh sách bài học
+        // Hàm tải và nhóm các bài học theo danh mục lớn (Môn học)
         window.loadLessons = async function() {
             const container = document.getElementById("lessons-container");
             container.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center">Đang tải danh sách bài học...</p>`;
@@ -144,39 +137,72 @@
                 const snapshot = await db.collection("lessons").orderBy("createdAt", "desc").get();
                 
                 if (snapshot.empty) {
-                    container.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center">Chưa có bài học nào được đóng góp.</p>`;
+                    container.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center bg-white border border-gray-200 rounded-xl p-6">Chưa có bài học nào được đóng góp.</p>`;
                     return;
                 }
 
-                let html = "";
+                // Gom nhóm các bài học theo subject (môn học lớn)
+                const grouped = {};
                 snapshot.forEach((docSnap) => {
-                    const lesson = docSnap.data();
-                    const lessonId = docSnap.id;
-                    const canDelete = window.currentUser && (lesson.authorEmail === window.currentUser.email);
+                    const data = docSnap.val ? docSnap.val() : docSnap.data();
+                    const id = docSnap.id;
+                    const subject = (data.subject || "Chung").trim();
+                    
+                    if (!grouped[subject]) {
+                        grouped[subject] = [];
+                    }
+                    grouped[subject].push({ id, ...data });
+                });
+
+                let html = "";
+                // Tạo giao diện Danh mục lớn bao bên ngoài, mục nhỏ bên trong
+                for (const [subject, items] of Object.entries(grouped)) {
+                    html += `
+                        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-6">
+                            <!-- Tiêu đề Danh mục lớn -->
+                            <div class="bg-indigo-50 border-b border-indigo-100 px-6 py-4 flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="bg-indigo-600 text-white p-2 rounded-lg">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-indigo-900">${subject}</h3>
+                                </div>
+                                <span class="bg-indigo-200 text-indigo-800 text-xs font-semibold px-2.5 py-1 rounded-full">${items.length} bài học</span>
+                            </div>
+
+                            <!-- Danh sách các mục nhỏ bên trong -->
+                            <div class="divide-y divide-gray-100">
+                    `;
+
+                    items.forEach((lesson) => {
+                        const canDelete = window.currentUser && (lesson.authorEmail === window.currentUser.email);
+                        html += `
+                            <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
+                                <div class="space-y-1">
+                                    <h4 class="font-semibold text-gray-800 text-base">${lesson.title}</h4>
+                                    <p class="text-xs text-gray-500">Thời lượng: ${lesson.time} • Người đăng: <span class="font-medium text-gray-700">${lesson.authorName}</span></p>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <a href="${lesson.fileUrl}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3.5 py-2 rounded-lg font-medium transition flex items-center space-x-1.5 shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                        <span>Xem tài liệu</span>
+                                    </a>
+                                    ${canDelete ? `
+                                        <button onclick="deleteLesson('${lesson.id}')" title="Xóa bài học này" class="bg-red-50 hover:bg-red-100 text-red-600 p-2 rounded-lg transition">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
 
                     html += `
-                        <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex items-center justify-between hover:shadow-md transition">
-                            <div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="bg-indigo-100 text-indigo-700 text-xs font-semibold px-2.5 py-0.5 rounded">${lesson.subject || 'Chung'}</span>
-                                    <h4 class="font-semibold text-gray-800">${lesson.title}</h4>
-                                </div>
-                                <p class="text-xs text-gray-500 mt-1">Thời lượng: ${lesson.time} • Bởi: ${lesson.authorName}</p>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <a href="${lesson.fileUrl}" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-2 rounded-lg font-medium transition flex items-center space-x-1">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                    <span>Tài liệu</span>
-                                </a>
-                                ${canDelete ? `
-                                    <button onclick="deleteLesson('${lessonId}')" title="Xóa bài học" class="bg-red-50 hover:bg-red-100 text-red-600 p-2 rounded-lg transition">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                    </button>
-                                ` : ''}
                             </div>
                         </div>
                     `;
-                });
+                }
+
                 container.innerHTML = html;
             } catch (error) {
                 console.error("Lỗi tải bài học:", error);
@@ -220,8 +246,8 @@
                         <input type="text" id="lesson-title" required placeholder="VD: Khảo sát hàm số" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Môn học</label>
-                        <input type="text" id="lesson-subject" required placeholder="VD: Toán, Sinh, Anh..." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Môn học (Danh mục lớn)</label>
+                        <input type="text" id="lesson-subject" required placeholder="VD: Toán, Sinh học, Tiếng Anh..." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-600 mb-1">Thời lượng (phút)</label>
