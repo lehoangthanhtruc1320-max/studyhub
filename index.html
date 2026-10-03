@@ -128,7 +128,6 @@
             }
         };
 
-        // Hàm tải và nhóm các bài học theo danh mục lớn (Môn học)
         window.loadLessons = async function() {
             const container = document.getElementById("lessons-container");
             container.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center">Đang tải danh sách bài học...</p>`;
@@ -141,7 +140,6 @@
                     return;
                 }
 
-                // Gom nhóm các bài học theo subject (môn học lớn)
                 const grouped = {};
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.val ? docSnap.val() : docSnap.data();
@@ -155,11 +153,9 @@
                 });
 
                 let html = "";
-                // Tạo giao diện Danh mục lớn bao bên ngoài, mục nhỏ bên trong
                 for (const [subject, items] of Object.entries(grouped)) {
                     html += `
                         <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-6">
-                            <!-- Tiêu đề Danh mục lớn -->
                             <div class="bg-indigo-50 border-b border-indigo-100 px-6 py-4 flex items-center justify-between">
                                 <div class="flex items-center space-x-3">
                                     <div class="bg-indigo-600 text-white p-2 rounded-lg">
@@ -170,12 +166,13 @@
                                 <span class="bg-indigo-200 text-indigo-800 text-xs font-semibold px-2.5 py-1 rounded-full">${items.length} bài học</span>
                             </div>
 
-                            <!-- Danh sách các mục nhỏ bên trong -->
                             <div class="divide-y divide-gray-100">
                     `;
 
                     items.forEach((lesson) => {
-                        const canDelete = window.currentUser && (lesson.authorEmail === window.currentUser.email);
+                        // Cho phép xóa/chỉnh sửa nếu người dùng ĐÃ ĐĂNG NHẬP (bất kể ai tạo)
+                        const canDelete = window.currentUser !== null;
+
                         html += `
                             <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
                                 <div class="space-y-1">
