@@ -6,13 +6,13 @@
     <title>StudyHub - Nền tảng chia sẻ học tập</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs chuẩn -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase/app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase/auth.js";
-        import { getFirestore, collection, addTimestamp, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase/firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Cấu hình Firebase chính xác của bạn
+        // Cấu hình Firebase của bạn
         const firebaseConfig = {
             apiKey: "AIzaSyDJxbgxB0DiVDXk07XU4KhHe2HM-BZf3Gs",
             authDomain: "studyhub-ac686.firebaseapp.com",
@@ -27,7 +27,6 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // Biến lưu trạng thái người dùng hiện tại
         window.currentUser = null;
 
         // Xử lý đăng nhập Google
@@ -57,7 +56,6 @@
             const contributeForm = document.getElementById("contribute-form-container");
 
             if (user) {
-                // Đã đăng nhập
                 loginSection.innerHTML = `
                     <div class="flex items-center space-x-3">
                         <img src="${user.photoURL || 'https://via.placeholder.com/40'}" alt="Avatar" class="w-9 h-9 rounded-full border border-indigo-500">
@@ -71,7 +69,6 @@
                 if (authContainer) authContainer.classList.add("hidden");
                 if (contributeForm) contributeForm.classList.remove("hidden");
             } else {
-                // Chưa đăng nhập
                 loginSection.innerHTML = `
                     <button onclick="loginWithGoogle()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition shadow-sm">
                         <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.24 10.285V14.2h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.344-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0 5.48 0 0 5.48 0 12s5.48 12 12.24 12c7.058 0 11.733-4.96 11.733-11.95 0-.828-.086-1.45-.19-2.065H12.24z"/></svg>
@@ -81,11 +78,10 @@
                 if (authContainer) authContainer.classList.remove("hidden");
                 if (contributeForm) contributeForm.classList.add("hidden");
             }
-            // Tải lại danh sách bài học để hiển thị/ẩn nút xóa tương ứng
             loadLessons();
         });
 
-        // Hàm Đóng góp chuyên đề mới lên Firestore
+        // Hàm Đóng góp chuyên đề
         window.handleContribute = async function(e) {
             e.preventDefault();
             if (!window.currentUser) {
@@ -136,7 +132,7 @@
             }
         };
 
-        // Hàm Tải danh sách bài học từ Firestore
+        // Hàm Tải danh sách bài học
         window.loadLessons = async function() {
             const container = document.getElementById("lessons-container");
             container.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center">Đang tải danh sách bài học...</p>`;
@@ -154,8 +150,6 @@
                 querySnapshot.forEach((docSnap) => {
                     const lesson = docSnap.data();
                     const lessonId = docSnap.id;
-                    
-                    // Kiểm tra quyền xóa: hiển thị nút thùng rác nếu là chính chủ hoặc email khớp
                     const canDelete = window.currentUser && (lesson.authorEmail === window.currentUser.email);
 
                     html += `
@@ -188,7 +182,6 @@
             }
         };
 
-        // Tự động tải danh sách khi mở trang
         window.addEventListener("DOMContentLoaded", () => {
             loadLessons();
         });
@@ -205,16 +198,13 @@
                 </div>
                 <h1 class="text-xl font-bold text-gray-800">StudyHub</h1>
             </div>
-            <div id="login-section">
-                <!-- Nút đăng nhập/thông tin tài khoản sẽ được chèn tự động qua JS -->
-            </div>
+            <div id="login-section"></div>
         </div>
     </header>
 
     <!-- Main Content -->
     <main class="max-w-5xl mx-auto px-4 py-8 flex-grow w-full space-y-6">
         
-        <!-- Thông báo yêu cầu đăng nhập khi chưa login -->
         <div id="auth-container" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 text-center space-y-3">
             <p class="text-indigo-900 font-medium">Bạn cần đăng nhập tài khoản Google để có thể đóng góp chuyên đề học tập mới.</p>
             <button onclick="loginWithGoogle()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition shadow-sm inline-flex items-center space-x-2">
@@ -223,7 +213,6 @@
             </button>
         </div>
 
-        <!-- Form đóng góp chuyên đề (chỉ hiện khi đã đăng nhập) -->
         <div id="contribute-form-container" class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hidden">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Đóng góp chuyên đề học tập</h3>
             <form id="contribute-form" onsubmit="handleContribute(event)" class="space-y-4">
@@ -251,12 +240,9 @@
             </form>
         </div>
 
-        <!-- Danh sách bài học cộng đồng -->
         <div class="space-y-3">
             <h3 class="text-lg font-bold text-gray-800">DANH SÁCH BÀI HỌC CỘNG ĐỒNG</h3>
-            <div id="lessons-container" class="space-y-3">
-                <!-- Nội dung danh sách sẽ được render tự động ở đây -->
-            </div>
+            <div id="lessons-container" class="space-y-3"></div>
         </div>
 
     </main>
