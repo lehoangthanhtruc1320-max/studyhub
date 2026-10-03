@@ -6,33 +6,36 @@
     <title>StudyHub - Nền tảng chia sẻ học tập</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDKs chuẩn -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    
+    <!-- Firebase SDKs bản Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-        // Cấu hình Firebase của bạn
+    <script>
+        // Cấu hình Firebase chính xác của bạn
         const firebaseConfig = {
-            apiKey: "AIzaSyDJxbgxB0DiVDXk07XU4KhHe2HM-BZf3Gs",
+            apiKey: "AIzaSyDJxbgxBOdiVDXk07XU4KhHe2HM-BZf3Gs",
             authDomain: "studyhub-ac686.firebaseapp.com",
             projectId: "studyhub-ac686",
             storageBucket: "studyhub-ac686.firebasestorage.app",
             messagingSenderId: "814449733460",
-            appId: "1:814449733460:web:5335822abe5bea0659a2c1"
+            appId: "1:814449733460:web:5335822abe5bea0659a2c1",
+            measurementId: "G-LZC96XFTCD"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+        // Khởi tạo Firebase Compat
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const provider = new firebase.auth.GoogleAuthProvider();
 
         window.currentUser = null;
 
         // Xử lý đăng nhập Google
         window.loginWithGoogle = async function() {
             try {
-                await signInWithPopup(auth, provider);
+                await auth.signInWithPopup(provider);
             } catch (error) {
                 console.error("Lỗi đăng nhập:", error);
                 alert("Đăng nhập thất bại: " + error.message);
@@ -42,14 +45,14 @@
         // Xử lý đăng xuất
         window.logout = async function() {
             try {
-                await signOut(auth);
+                await auth.signOut();
             } catch (error) {
                 console.error("Lỗi đăng xuất:", error);
             }
         };
 
         // Lắng nghe trạng thái đăng nhập
-        onAuthStateChanged(auth, (user) => {
+        auth.onAuthStateChanged((user) => {
             window.currentUser = user;
             const loginSection = document.getElementById("login-section");
             const authContainer = document.getElementById("auth-container");
@@ -95,14 +98,14 @@
             const fileUrl = document.getElementById("lesson-file").value;
 
             try {
-                await addDoc(collection(db, "lessons"), {
+                await db.collection("lessons").add({
                     title: title,
                     subject: subject,
                     time: time ? time + "p" : "15p",
                     fileUrl: fileUrl,
                     authorName: window.currentUser.displayName || "Thành viên",
                     authorEmail: window.currentUser.email,
-                    createdAt: new Date()
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
                 alert("Đóng góp chuyên đề thành công!");
@@ -122,7 +125,7 @@
             }
             if (confirm("Bạn có chắc chắn muốn xóa bài học này không?")) {
                 try {
-                    await deleteDoc(doc(db, "lessons", id));
+                    await db.collection("lessons").doc(id).delete();
                     alert("Đã xóa bài học thành công!");
                     loadLessons();
                 } catch (error) {
@@ -138,16 +141,15 @@
             container.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center">Đang tải danh sách bài học...</p>`;
 
             try {
-                const q = query(collection(db, "lessons"), orderBy("createdAt", "desc"));
-                const querySnapshot = await getDocs(q);
+                const snapshot = await db.collection("lessons").orderBy("createdAt", "desc").get();
                 
-                if (querySnapshot.empty) {
+                if (snapshot.empty) {
                     container.innerHTML = `<p class="text-gray-500 text-sm py-4 text-center">Chưa có bài học nào được đóng góp.</p>`;
                     return;
                 }
 
                 let html = "";
-                querySnapshot.forEach((docSnap) => {
+                snapshot.forEach((docSnap) => {
                     const lesson = docSnap.data();
                     const lessonId = docSnap.id;
                     const canDelete = window.currentUser && (lesson.authorEmail === window.currentUser.email);
@@ -181,10 +183,6 @@
                 container.innerHTML = `<p class="text-red-500 text-sm py-4 text-center">Không thể tải danh sách bài học.</p>`;
             }
         };
-
-        window.addEventListener("DOMContentLoaded", () => {
-            loadLessons();
-        });
     </script>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col justify-between font-sans">
