@@ -3,20 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyHub - Nền tảng học tập cộng đồng</title>
+    <title>StudyHub - Nền tảng học tập chung</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome cho các icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        nude: {
+                            50: '#fcf8f7',
+                            100: '#f7edeb',
+                            200: '#eddcd9',
+                            300: '#dfbcba',
+                            400: '#cc9996',
+                            500: '#b87c79',
+                            600: '#a36663',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-pink-50 min-h-screen flex flex-col font-sans text-slate-800">
+<body class="bg-nude-50 min-h-screen flex flex-col font-sans text-slate-700">
 
     <!-- Header -->
-    <header class="bg-pink-500 text-white shadow-md sticky top-0 z-50">
+    <header class="bg-white/80 backdrop-blur-md border-b border-nude-200 sticky top-0 z-50 shadow-xs">
         <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-graduation-cap text-2xl"></i>
-                <h1 class="text-lg font-bold">StudyHub Community</h1>
+                <div class="w-9 h-9 bg-nude-200 rounded-xl flex items-center justify-center text-nude-600 font-bold">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h1 class="text-base font-bold text-slate-800 tracking-wide">StudyHub</h1>
+            </div>
+
+            <!-- Khu vực trạng thái tài khoản đăng nhập -->
+            <div id="auth-container">
+                <!-- Sẽ được render tự động qua JS -->
+                <button onclick="loginWithGoogle()" class="bg-nude-100 hover:bg-nude-200 text-nude-600 text-xs px-3.5 py-2 rounded-xl font-medium transition flex items-center space-x-2 border border-nude-200 shadow-2xs">
+                    <i class="fa-brands fa-google"></i>
+                    <span>Đăng nhập Google</span>
+                </button>
             </div>
         </div>
     </header>
@@ -26,56 +56,68 @@
         
         <!-- Tiêu đề trang -->
         <div class="text-center py-2">
-            <h2 class="text-xl font-extrabold text-pink-600">Tự Học - Tự Lập - Tự Do!</h2>
+            <h2 class="text-lg font-bold text-nude-600">Tự Học - Tự Lập - Tự Do!</h2>
+            <p class="text-xs text-slate-500 mt-1">Cùng nhau xây dựng và chia sẻ tài liệu học tập chất lượng</p>
         </div>
 
-        <!-- FORM TẠO CHUYÊN ĐỀ MỚI TRỰC TIẾP TRÊN WEB -->
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-pink-200">
-            <h3 class="text-md font-bold text-pink-700 mb-3"><i class="fa-solid fa-plus-circle mr-1"></i> Tạo chuyên đề / Bài học mới</h3>
+        <!-- FORM TẠO CHUYÊN ĐỀ MỚI (CHỈ HIỆN KHI ĐÃ ĐĂNG NHẬP) -->
+        <div id="add-form-wrapper" class="bg-white p-5 rounded-2xl shadow-xs border border-nude-200 hidden">
+            <h3 class="text-sm font-bold text-nude-600 mb-3 flex items-center">
+                <i class="fa-solid fa-plus-circle mr-1.5"></i> Đóng góp chuyên đề / Bài học mới
+            </h3>
             <form id="add-category-form" class="space-y-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Tên chuyên đề:</label>
-                    <input type="text" id="input-title" required placeholder="VD: [2K10] CHUYÊN ĐỀ HÓA HỌC 11" class="w-full px-3 py-2 border border-pink-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/30">
+                    <input type="text" id="input-title" required placeholder="VD: [2K10] CHUYÊN ĐỀ TOÁN HỌC 11" class="w-full px-3 py-2 border border-nude-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-nude-400 bg-nude-50/50">
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Thời lượng / Số bài:</label>
-                        <input type="text" id="input-duration" required placeholder="VD: 0/15 • 25 giờ 30 phút" class="w-full px-3 py-2 border border-pink-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/30">
+                        <input type="text" id="input-duration" required placeholder="VD: 0/15 • 25 giờ" class="w-full px-3 py-2 border border-nude-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-nude-400 bg-nude-50/50">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Link tài liệu Google Drive:</label>
-                        <input type="url" id="input-link" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 border border-pink-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/30">
+                        <input type="url" id="input-link" placeholder="https://drive.google.com/..." class="w-full px-3 py-2 border border-nude-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-nude-400 bg-nude-50/50">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Mô tả / Chi tiết bài học:</label>
-                    <textarea id="input-desc" rows="2" placeholder="VD: Tổng hợp các dạng bài tập trọng tâm..." class="w-full px-3 py-2 border border-pink-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/30"></textarea>
+                    <textarea id="input-desc" rows="2" placeholder="VD: Tổng hợp các dạng bài tập trọng tâm..." class="w-full px-3 py-2 border border-nude-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-nude-400 bg-nude-50/50"></textarea>
                 </div>
-                <button type="submit" id="submit-btn" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2.5 rounded-xl transition shadow-sm text-sm">
-                    Tạo chuyên đề mới
+                <button type="submit" id="submit-btn" class="w-full bg-nude-500 hover:bg-nude-600 text-white font-semibold py-2.5 rounded-xl transition shadow-xs text-sm">
+                    Đăng lên hệ thống chung
                 </button>
             </form>
         </div>
 
-        <!-- DANH SÁCH CHUYÊN ĐỀ TẢI TỪ FIREBASE -->
+        <!-- THÔNG BÁO YÊU CẦU ĐĂNG NHẬP ĐỂ TẠO BÀI -->
+        <div id="login-required-banner" class="bg-white p-4 rounded-2xl border border-nude-200 text-center shadow-xs">
+            <p class="text-xs text-slate-600 mb-2">Bạn cần đăng nhập tài khoản Google để có thể đóng góp chuyên đề học tập mới.</p>
+            <button onclick="loginWithGoogle()" class="bg-nude-500 hover:bg-nude-600 text-white text-xs px-4 py-2 rounded-xl font-medium transition shadow-xs inline-flex items-center space-x-1.5">
+                <i class="fa-brands fa-google"></i>
+                <span>Đăng nhập ngay</span>
+            </button>
+        </div>
+
+        <!-- DANH SÁCH CHUYÊN ĐỀ TỪ FIREBASE -->
         <div>
-            <h3 class="text-md font-bold text-slate-700 uppercase tracking-wider mb-3">Danh sách bài học</h3>
-            <div id="categories-container">
-                <!-- Nội dung sẽ được render tự động từ Firestore -->
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Danh sách bài học cộng đồng</h3>
+            <div id="categories-container" class="space-y-3">
+                <!-- Nội dung được render tự động -->
             </div>
         </div>
 
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-pink-100 py-4 mt-auto">
+    <footer class="bg-white border-t border-nude-200 py-4 mt-auto">
         <div class="max-w-4xl mx-auto px-4 grid grid-cols-2 gap-3">
-            <a href="#" class="flex items-center justify-center space-x-2 bg-pink-100 hover:bg-pink-200 text-pink-700 py-3 rounded-xl font-semibold transition border border-pink-200">
-                <i class="fa-brands fa-facebook text-lg"></i>
+            <a href="#" class="flex items-center justify-center space-x-2 bg-nude-100 hover:bg-nude-200 text-nude-600 py-2.5 rounded-xl text-xs font-semibold transition border border-nude-200">
+                <i class="fa-brands fa-facebook text-sm"></i>
                 <span>Facebook (+2.1K)</span>
             </a>
-            <a href="#" class="flex items-center justify-center space-x-2 bg-pink-100 hover:bg-pink-200 text-pink-700 py-3 rounded-xl font-semibold transition border border-pink-200">
-                <i class="fa-brands fa-youtube text-lg"></i>
+            <a href="#" class="flex items-center justify-center space-x-2 bg-nude-100 hover:bg-nude-200 text-nude-600 py-2.5 rounded-xl text-xs font-semibold transition border border-nude-200">
+                <i class="fa-brands fa-youtube text-sm"></i>
                 <span>YouTube (+1.6M)</span>
             </a>
         </div>
@@ -84,7 +126,8 @@
     <!-- Firebase SDK và Logic xử lý -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // Cấu hình Firebase của bạn
         const firebaseConfig = {
@@ -99,40 +142,112 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        // Hàm tải danh sách chuyên đề từ Firestore lên giao diện
+        let currentUser = null;
+
+        // Xử lý đăng nhập Google
+        window.loginWithGoogle = async function() {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Lỗi đăng nhập:", error);
+                alert("Không thể đăng nhập bằng Google. Vui lòng thử lại!");
+            }
+        };
+
+        // Xử lý đăng xuất
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Lỗi đăng xuất:", error);
+            }
+        };
+
+        // Theo dõi trạng thái đăng nhập của người dùng
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            const authContainer = document.getElementById('auth-container');
+            const addFormWrapper = document.getElementById('add-form-wrapper');
+            const loginBanner = document.getElementById('login-required-banner');
+
+            if (user) {
+                // Đã đăng nhập
+                authContainer.innerHTML = `
+                    <div class="flex items-center space-x-2 bg-nude-100 px-3 py-1.5 rounded-xl border border-nude-200">
+                        <img src="${user.photoURL || 'https://via.placeholder.com/32'}" alt="Avatar" class="w-6 h-6 rounded-full object-cover">
+                        <span class="text-xs font-semibold text-slate-700 hidden sm:inline">${user.displayName}</span>
+                        <button onclick="logout()" class="text-xs text-rose-500 hover:text-rose-700 font-medium ml-1" title="Đăng xuất">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                `;
+                addFormWrapper.classList.remove('hidden');
+                loginBanner.classList.add('hidden');
+            } else {
+                // Chưa đăng nhập
+                authContainer.innerHTML = `
+                    <button onclick="loginWithGoogle()" class="bg-nude-100 hover:bg-nude-200 text-nude-600 text-xs px-3.5 py-2 rounded-xl font-medium transition flex items-center space-x-2 border border-nude-200">
+                        <i class="fa-brands fa-google"></i>
+                        <span>Đăng nhập Google</span>
+                    </button>
+                `;
+                addFormWrapper.classList.add('hidden');
+                loginBanner.classList.remove('hidden');
+            }
+            loadCategories();
+        });
+
+        // Tải danh sách chuyên đề từ Firestore
         async function loadCategories() {
             const container = document.getElementById('categories-container');
-            container.innerHTML = '<p class="text-center text-pink-500 py-4"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</p>';
+            container.innerHTML = '<p class="text-center text-nude-500 py-4 text-xs"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang tải dữ liệu...</p>';
             
             try {
                 const querySnapshot = await getDocs(collection(db, "categories"));
                 container.innerHTML = '';
                 
                 if (querySnapshot.empty) {
-                    container.innerHTML = '<p class="text-center text-slate-500 py-4">Chưa có chuyên đề nào. Hãy tạo mới bên trên!</p>';
+                    container.innerHTML = '<p class="text-center text-slate-400 py-4 text-xs">Chưa có chuyên đề nào được tạo. Hãy đăng nhập và đóng góp bài học đầu tiên!</p>';
                     return;
                 }
 
                 let index = 1;
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
+                    const docId = docSnap.id;
                     const categoryId = `cat-${index}`;
                     
+                    // Kiểm tra quyền xóa: chỉ người tạo bài mới thấy nút xóa (hoặc bất kỳ ai đã đăng nhập nếu muốn cộng đồng cùng quản lý)
+                    const canDelete = currentUser && (data.userId === currentUser.uid || !data.userId);
+
                     const itemHTML = `
-                        <div class="bg-pink-100 rounded-2xl p-4 shadow-sm border border-pink-200 transition hover:shadow-md cursor-pointer mb-3" onclick="toggleAccordion('${categoryId}', 'icon-${index}')">
-                            <div class="flex justify-between items-center">
+                        <div class="bg-white rounded-2xl p-4 shadow-xs border border-nude-200 transition hover:shadow-sm">
+                            <div class="flex justify-between items-center cursor-pointer" onclick="toggleAccordion('${categoryId}', 'icon-${index}')">
                                 <div>
-                                    <h4 class="font-bold text-pink-900 text-sm md:text-base">${data.title || 'Chuyên đề học tập'}</h4>
-                                    <p class="text-xs text-pink-700 mt-1">${data.duration || '0 bài học • 0 phút'}</p>
+                                    <h4 class="font-bold text-slate-800 text-sm md:text-base">${data.title || 'Chuyên đề học tập'}</h4>
+                                    <p class="text-xs text-slate-500 mt-1 flex items-center space-x-2">
+                                        <span><i class="fa-regular fa-clock mr-1"></i>${data.duration || '0 bài học'}</span>
+                                        <span>•</span>
+                                        <span class="text-nude-600 font-medium">Bởi: ${data.author || 'Thành viên'}</span>
+                                    </p>
                                 </div>
-                                <div class="flex items-center space-x-3">
-                                    ${data.fileLink ? `<a href="${data.fileLink}" target="_blank" onclick="event.stopPropagation()" class="bg-pink-600 hover:bg-pink-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition"><i class="fa-solid fa-download mr-1"></i> Tài liệu</a>` : ''}
-                                    <i id="icon-${index}" class="fa-solid fa-chevron-down text-pink-700 transition-transform duration-300"></i>
+                                <div class="flex items-center space-x-2" onclick="event.stopPropagation()">
+                                    ${data.fileLink ? `<a href="${data.fileLink}" target="_blank" class="bg-nude-500 hover:bg-nude-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition flex items-center"><i class="fa-solid fa-download mr-1"></i> Tài liệu</a>` : ''}
+                                    
+                                    ${canDelete ? `
+                                        <button onclick="deleteCategory('${docId}')" class="bg-rose-100 hover:bg-rose-200 text-rose-600 text-xs px-2.5 py-1.5 rounded-lg font-medium transition" title="Xóa chuyên đề">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    ` : ''}
+
+                                    <i id="icon-${index}" class="fa-solid fa-chevron-down text-nude-500 transition-transform duration-300 ml-1 text-xs"></i>
                                 </div>
                             </div>
-                            <div id="${categoryId}" class="hidden mt-3 pt-3 border-t border-pink-200 text-sm text-slate-700 space-y-2">
-                                <p>• <b>Mô tả/Nội dung:</b> ${data.description || 'Đang cập nhật nội dung chi tiết cho chuyên đề này...'}</p>
+                            <div id="${categoryId}" class="hidden mt-3 pt-3 border-t border-nude-100 text-xs md:text-sm text-slate-600 space-y-2">
+                                <p>• <b>Mô tả nội dung:</b> ${data.description || 'Đang cập nhật chi tiết...'}</p>
                             </div>
                         </div>
                     `;
@@ -141,18 +256,34 @@
                 });
             } catch (error) {
                 console.error("Lỗi tải dữ liệu: ", error);
-                container.innerHTML = '<p class="text-center text-red-500 py-4">Lỗi kết nối cơ sở dữ liệu!</p>';
+                container.innerHTML = '<p class="text-center text-rose-500 py-4 text-xs">Lỗi kết nối cơ sở dữ liệu!</p>';
             }
         }
 
-        // Xử lý sự kiện submit Form thêm chuyên đề trực tiếp
-        window.addEventListener('DOMContentLoaded', () => {
-            loadCategories();
+        // Xóa chuyên đề
+        window.deleteCategory = async function(docId) {
+            if (confirm("Bạn có chắc chắn muốn xóa chuyên đề này không?")) {
+                try {
+                    await deleteDoc(doc(db, "categories", docId));
+                    loadCategories();
+                } catch (error) {
+                    console.error("Lỗi khi xóa:", error);
+                    alert("Không thể xóa chuyên đề này!");
+                }
+            }
+        };
 
+        // Gửi form thêm chuyên đề mới kèm theo thông tin tác giả
+        window.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('add-category-form');
             if(form) {
                 form.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    if (!currentUser) {
+                        alert("Vui lòng đăng nhập trước khi đóng góp bài học!");
+                        return;
+                    }
+
                     const title = document.getElementById('input-title').value;
                     const duration = document.getElementById('input-duration').value;
                     const fileLink = document.getElementById('input-link').value;
@@ -160,7 +291,7 @@
 
                     const submitBtn = document.getElementById('submit-btn');
                     submitBtn.disabled = true;
-                    submitBtn.innerText = "Đang lưu...";
+                    submitBtn.innerText = "Đang đăng...";
 
                     try {
                         await addDoc(collection(db, "categories"), {
@@ -168,25 +299,26 @@
                             duration: duration,
                             fileLink: fileLink,
                             description: description,
+                            userId: currentUser.uid,
+                            author: currentUser.displayName || "Thành viên",
                             createdAt: new Date()
                         });
                         
-                        alert("Thêm chuyên đề thành công!");
                         form.reset();
-                        loadCategories(); // Tải lại danh sách ngay lập tức
+                        loadCategories();
                     } catch (error) {
                         console.error("Lỗi khi thêm: ", error);
                         alert("Có lỗi xảy ra, vui lòng thử lại!");
                     } finally {
                         submitBtn.disabled = false;
-                        submitBtn.innerText = "Tạo chuyên đề mới";
+                        submitBtn.innerText = "Đăng lên hệ thống chung";
                     }
                 });
             }
         });
     </script>
 
-    <!-- Hàm mở rộng/thu gọn Accordion -->
+    <!-- Script Accordion -->
     <script>
         function toggleAccordion(contentId, iconId) {
             const content = document.getElementById(contentId);
